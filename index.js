@@ -1,15 +1,56 @@
-const request = require('request');
+const { config } = require('./src/config/config');
+const { fetchContent } = require('./src/services/fetcher/fetcher');
+const { parser } = require('./src/services/parser/parser');
+const { Queue } = require('./src/services/queue/Queue');
+const { Log } = require('./src/models/Log');
+const { WebPage } = require('./src/models/WebPage');
 
+async function main() {
 
-const options = {
-    url: 'https://namnak.com',
-    headers: {
-        'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36'
+    const queue = new Queue();
+    const webPages = [];
+    let iterations = 0;
+    queue.pushAll(config.SEEDS);
+
+    const worker = async () => {
+        if (queue.isEmpty()) return;
+
+        let linkInQueue = queue.pop();
+        try {
+
+            const HTMLContent = await fetchContent(linkInQueue);
+            iterations++;
+            const currentWebPage = new WebPage(iterations, linkInQueue);
+            const childLinks = parser(HTMLContent, linkInQueue);
+            queue.pushAll(childLinks);
+            currentWebPage.setLinks(childLinks);
+            webPages.push(currentWebPage);
+            linkInQueue = queue.pop();
+
+        } catch {
+            linkInQueue = queue.pop();
+        }
+
+        console.log(`iterations: ${iterations}`);
+    };
+
+    while (iterations < config.LIMIT) {
+        await new Promise(resolve => setTimeout(resolve, config.FETCH_DELAY));
+        await worker();
     }
-}
 
-request(options, function (error, response, body) {
-    console.error('error:', error); // Print the error if one occurred
-    console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-    console.log('body:', body); // Print the HTML
-});
+    if (config.SAVE_LOGS) {
+        const logFile = new Log();
+        logFile.addContent(JSON.stringify({ 
+            visitedLinks: queue.getNumberOfVisitedLinks,
+            discovered: queue.getNumberOfAllLinks,
+            webpages: webPages,
+         }));
+        logFile.close();
+    }
+
+    // intervalId = setInterval(worker, config.FETCH_DELAY);
+};
+
+
+main();
