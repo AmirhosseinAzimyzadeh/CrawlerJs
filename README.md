@@ -1,2 +1,2 @@
-# crawlerJs
+# CrawlerJs
 simple crawler with nodeJs
