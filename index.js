@@ -42,8 +42,8 @@ async function main() {
     if (config.SAVE_LOGS) {
         const logFile = new Log();
         logFile.addContent(JSON.stringify({ 
-            visitedLinks: queue.getNumberOfVisitedLinks,
-            discovered: queue.getNumberOfAllLinks,
+            visitedLinks: queue.getNumberOfVisitedLinks(),
+            discovered: queue.getNumberOfAllLinks(),
             webpages: webPages,
          }));
         logFile.close();
