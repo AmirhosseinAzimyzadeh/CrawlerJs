@@ -3,7 +3,7 @@ const logTypes = {
     LOAD: 'load',
     SUCCESS: 'success',
     ERROR: 'error',
-}
+};
 
 const colors = {
     red: '\x1b[31m',
@@ -11,16 +11,16 @@ const colors = {
     blue: '\x1b[34m',
     yellow: '\x1b[33m',
     reset: '\x1b[0m',
-}
+};
 
 /**
- * @param {string} message 
- * @param {string} logType 
- * 
+ * @param {string} message
+ * @param {string} logType
+ *
  * print logs in diffrent styles
  */
 function logger(message, logType) {
-    let color = '';
+    let color;
     switch (logType) {
         case logTypes.SUCCESS:
             color = colors.green;

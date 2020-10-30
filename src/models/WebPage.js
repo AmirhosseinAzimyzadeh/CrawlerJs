@@ -1,20 +1,20 @@
 class WebPage {
-    /** @param {string} id  */
-    /** @param {string} url  */
+    /** @param id {string}
+     *  @param url {string}
+     * */
     constructor(id, url) {
         this.id = id;
         this.url = url;
         this.links = [];
-        this.outlinkCount = 0;
+        this.outLinkCount = 0;
     }
 
     /**
-     * @param {Array<string>} linkArray 
+     * @param linkArray {Array<string>}
      */
     setLinks(linkArray) {
-        const links = [];
         linkArray.forEach(link => {
-            if(link.includes(this.url)) this.outlinkCount ++;
+            if(!link.includes(this.url)) this.outLinkCount ++;
         });
         this.links.push(...linkArray);
     }
@@ -22,8 +22,16 @@ class WebPage {
     /**
      * @returns {number}
      */
-    getNumberOfOutlinks() {
-        this.outlinkCount;
+    getNumberOfOutLinks() {
+      return this.outLinkCount;
+    }
+
+    getSimpleData() {
+        return {
+            id: this.id,
+            url: this.url,
+            outLinkCount: this.outLinkCount,
+        }
     }
 
 }

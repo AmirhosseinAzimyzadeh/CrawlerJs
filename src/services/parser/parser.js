@@ -4,7 +4,7 @@ const { logger, logTypes } = require('../../utils/logger');
 const { fileWriter } = require('../../services/writer/fileWriter');
 const { config } = require('../../config/config');
 
-/** 
+/**
  * @param {string} body
  * @param {string} baseUrl
  * @return {Array<string>} array of valid urls
@@ -19,7 +19,7 @@ function parser(body, baseUrl) {
 
     if (config.SAVE_TO_REPO) {
         let title = root.querySelector('title');
-        if (!title || title === '') title = baseUrl
+        if (!title || title === '') title = baseUrl;
         else title = title.innerText;
         fileWriter(body, title);
     }

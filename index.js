@@ -4,12 +4,15 @@ const { parser } = require('./src/services/parser/parser');
 const { Queue } = require('./src/services/queue/Queue');
 const { Log } = require('./src/models/Log');
 const { WebPage } = require('./src/models/WebPage');
+const { logger, logTypes } = require('./src/utils/logger');
+const { getMeanOfURLOutLinkDegree } = require('./src/utils/dataAnalyzer');
 
 async function main() {
 
     const queue = new Queue();
     const webPages = [];
     let iterations = 0;
+    const statusCodes = {};
     queue.pushAll(config.SEEDS);
 
     const worker = async () => {
@@ -17,21 +20,22 @@ async function main() {
 
         let linkInQueue = queue.pop();
         try {
-
-            const HTMLContent = await fetchContent(linkInQueue);
+            const {body:HTMLContent, statusCode} = await fetchContent(linkInQueue);
+            const statusCodeProp = statusCodes[`status_${statusCode}`];
+            if (statusCodeProp !== undefined){
+                statusCodes[`status_${statusCode}`] = statusCodeProp + 1;
+            } else {
+                statusCodes[`status_${statusCode}`] = 1;
+            }
+            if (statusCode === 404) return;
             iterations++;
-            const currentWebPage = new WebPage(iterations, linkInQueue);
+            const currentWebPage = new WebPage(`${iterations}`, linkInQueue);
             const childLinks = parser(HTMLContent, linkInQueue);
             queue.pushAll(childLinks);
             currentWebPage.setLinks(childLinks);
             webPages.push(currentWebPage);
-            linkInQueue = queue.pop();
-
-        } catch {
-            linkInQueue = queue.pop();
-        }
-
-        console.log(`iterations: ${iterations}`);
+        } catch {}
+        logger(`iterations: ${iterations}`, logTypes.LOAD)
     };
 
     while (iterations < config.LIMIT) {
@@ -39,18 +43,17 @@ async function main() {
         await worker();
     }
 
+
     if (config.SAVE_LOGS) {
         const logFile = new Log();
-        logFile.addContent(JSON.stringify({ 
+        logFile.addContent(JSON.stringify({
             visitedLinks: queue.getNumberOfVisitedLinks(),
             discovered: queue.getNumberOfAllLinks(),
-            webpages: webPages,
-         }));
+            statusCodes,
+            ...getMeanOfURLOutLinkDegree(webPages),
+            webPages: webPages.map(webPage => webPage.getSimpleData()),
+        }));
         logFile.close();
     }
-
-    // intervalId = setInterval(worker, config.FETCH_DELAY);
-};
-
-
-main();
+}
+main().then(() => {});

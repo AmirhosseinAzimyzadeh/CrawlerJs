@@ -1,12 +1,12 @@
 class Queue {
     constructor() {
-        this.data = []
+        this.data = [];
         this.visitedList = [];
         this.discoveredLinks = 0;
     }
 
     /**
-     * @param {Object} oject
+     * @param {Object} object
      */
     push(object){
         if (this.visitedList.includes(object) || this.data.includes(object) ) {
@@ -17,7 +17,7 @@ class Queue {
     }
 
     /**
-     * @param {Array<Object>} objectArray 
+     * @param {Array<Object>} objectArray
      */
     pushAll(objectArray){
         objectArray.forEach(obj => {this.push(obj)});
@@ -42,7 +42,7 @@ class Queue {
     }
 
     getNumberOfAllLinks() {
-
+        return this.discoveredLinks;
     }
 }
 

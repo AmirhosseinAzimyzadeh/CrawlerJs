@@ -16,7 +16,7 @@ function fetchContent(url) {
             }
             if (!error) logger(`[${url}] has been fetched successfully`, logTypes.SUCCESS);
             logger(`statusCode: ${response && response.statusCode}`);
-            resolve(body);
+            resolve({body, statusCode: response.statusCode});
         });
     });
 }
